@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from bson import ObjectId
 from typing import List
+from datetime import datetime
 
 class CourseSerializer(BaseModel):
     id: str = Field(..., alias="_id")
@@ -9,6 +10,10 @@ class CourseSerializer(BaseModel):
     year: str
     group: int
     number: int
+    IsActive: bool = False
+    IsDelete: bool = False
+    createDate: datetime = None
+    updateDate: datetime = None
 
 def course_serializer(course) -> CourseSerializer:
     course["_id"] = str(course["_id"]) 

@@ -1,46 +1,41 @@
-from fastapi import APIRouter, HTTPException
-from config.database import collection_name
-from bson import ObjectId
+from fastapi import APIRouter, Depends
+from service import CourseService
 from typing import List
-from schemas.courses import courses_serializers, course_serializer, CourseSerializer
-from models.courses import Course
+from schemas.courses import CourseSerializer
+from models.courses import Course, SearchRequestModel
 
-course = APIRouter()
+course_route = APIRouter()
 
 # Retrieve
-@course.get("/", response_model=List[CourseSerializer])
-async def get_courses():
-    courses = courses_serializers(collection_name.find())
-    return courses
+@course_route.get("/", response_model=List[CourseSerializer])
+async def Search(request: SearchRequestModel = Depends()):
+    return await CourseService.Search(request)
 
-@course.get("/{id}", response_model=CourseSerializer)
-async def get_course(id: str):
-    course = collection_name.find_one({"_id": ObjectId(id)})
-    if course:
-        return course_serializer(course)
-    raise HTTPException(status_code=404, detail="Course not found")
+@course_route.get("/{id}", response_model=CourseSerializer)
+async def Read(id: str):
+   return await CourseService.Read(id)
 
 # Create
-@course.post("/", response_model=List[CourseSerializer])
-async def create_course(course: Course):
-    course_dict = dict(course)
-    _id = collection_name.insert_one(course_dict)
-    return courses_serializers(collection_name.find({"_id": _id.inserted_id}))
+@course_route.post("/", response_model=List[CourseSerializer])
+async def Create(course: Course):
+    return await CourseService.Create(course)
 
 # Update
-@course.put("/{id}", response_model=List[CourseSerializer])
-async def update_course(id: str, course: Course):
-    result = collection_name.find_one_and_update({"_id": ObjectId(id)}, {"$set": dict(course)})
-    if result:
-        return courses_serializers(collection_name.find({"_id": ObjectId(id)}))
-    raise HTTPException(status_code=404, detail="Course not found")
+@course_route.put("/{id}", response_model=List[CourseSerializer])
+async def Update(id: str, course: Course):
+    return await CourseService.Update(id, course)
+
+# PatchActive
+@course_route.patch("/{id}/active", response_model=Course)
+async def PatchActive(id: str, IsActive: bool):
+   return await CourseService.PatchAcitve(id, IsActive)
+
+# PatchDelete
+@course_route.patch("/{id}/delete", response_model=Course)
+async def PatchDelete(id: str, IsDelete: bool):
+    return await CourseService.PatchDelete(id, IsDelete)
 
 # Delete
-@course.delete("/{id}")
-async def delete_course(id: str):
-    result = collection_name.find_one_and_delete({"_id": ObjectId(id)})
-    if result:
-        return {"status": "ok"}
-    raise HTTPException(status_code=404, detail="Course not found")
-
-
+@course_route.delete("/{id}")
+async def Delete(id: str):
+    return await CourseService.Delete(id)

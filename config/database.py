@@ -9,4 +9,4 @@ client = MongoClient("mongodb+srv://"+config.settings.user_name+":"+config.setti
 
 db = client.course
 
-collection_name = db["course"]
+course_collection = db["course"]
