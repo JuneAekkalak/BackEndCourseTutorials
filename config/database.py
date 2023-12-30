@@ -1,12 +1,29 @@
 from pymongo import MongoClient
-import ssl
-from core import config
+from core.config import settings
 
-ssl._create_default_https_context = ssl._create_unverified_context
+def get_mongo_connection():
+    user_name = settings.user_name
+    pass_word = settings.pass_word
+    host = settings.host
 
+    uri = f"mongodb+srv://{user_name}:{pass_word}@{host}/test"
 
-client = MongoClient("mongodb+srv://"+config.settings.user_name+":"+config.settings.pass_word+"@"+config.settings.host+"/test", ssl=True, ssl_cert_reqs=ssl.CERT_NONE)
+    try:
+        client = MongoClient(uri, ssl=True)
+        
+        client.list_database_names()
+        
+        return client
 
-db = client.course
+    except Exception as e:
+        raise ConnectionError(f"Failed to connect to MongoDB: {e}")
 
-course_collection = db["course"]
+try:
+    client = get_mongo_connection()
+    
+    db = client.course
+    course_collection = db["course"]
+
+except ConnectionError as ce:
+    print(ce)
+    

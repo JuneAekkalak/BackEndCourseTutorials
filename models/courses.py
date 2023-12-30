@@ -1,4 +1,3 @@
-from fastapi import Query
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
@@ -10,10 +9,14 @@ class Course(BaseModel):
     year: str
     group: int
     number: int
-    IsActive: bool = False
-    IsDelete: bool = False
-    createDate: datetime = None
-    updateDate: datetime = None
+
+class CourseUpdateRequestModel(BaseModel):
+    course_code: str
+    course_name: str
+    course_decript: str = None
+    year: str
+    group: int
+    number: int
 
 class SearchRequestModel(BaseModel):
     course_code: Optional[str] = None
