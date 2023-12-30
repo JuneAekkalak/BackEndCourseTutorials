@@ -47,7 +47,7 @@ async def test_update_course(client):
     assert response.json()["message"] == "Course update successfully"
 
 @pytest.mark.asyncio
-async def test_patch_active_course(client):
+async def test_patch_active_course_true(client):
     global course_id
     response = await client.patch(f"/api/courses/{course_id}/active?IsActive={True}")
     assert response.status_code == 200
@@ -55,9 +55,25 @@ async def test_patch_active_course(client):
     assert response.json()["message"] == "Course update successfully"
 
 @pytest.mark.asyncio
-async def test_patch_delete_course(client):
+async def test_patch_active_course_false(client):
+    global course_id
+    response = await client.patch(f"/api/courses/{course_id}/active?IsActive={False}")
+    assert response.status_code == 200
+    assert response.json()["status"] == "success"
+    assert response.json()["message"] == "Course update successfully"
+
+@pytest.mark.asyncio
+async def test_patch_delete_course_true(client):
     global course_id
     response = await client.patch(f"/api/courses/{course_id}/delete?IsDelete={True}")
+    assert response.status_code == 200
+    assert response.json()["status"] == "success"
+    assert response.json()["message"] == "Course update successfully"
+
+@pytest.mark.asyncio
+async def test_patch_delete_course_false(client):
+    global course_id
+    response = await client.patch(f"/api/courses/{course_id}/delete?IsDelete={False}")
     assert response.status_code == 200
     assert response.json()["status"] == "success"
     assert response.json()["message"] == "Course update successfully"
@@ -69,5 +85,52 @@ async def test_delete_course(client):
     assert response.status_code == 200
     assert response.json()["status"] == "success"
     assert response.json()["message"] == "Course deleted successfully"
+
+#Bad Request 
+@pytest.mark.asyncio
+async def test_create_duplicate_course(client):
+    course_data = {
+        "course_code": "CSE101",
+        "course_name": "Introduction to Computer Science",
+        "year": "2023",
+        "group": 1,
+        "number": 101
+    }
+    
+    oldresponse = await client.post("/api/courses/", json=course_data)
+    old_course_id = str(oldresponse.json()["_id"])
+    duplicate_course_data = {
+        "course_code": "CSE101",
+        "course_name": "Introduction to Computer Science",
+        "year": "2023",
+        "group": 1,
+        "number": 101
+    }
+    
+    newresponse = await client.post("/api/courses/", json=duplicate_course_data)
+    assert newresponse.status_code == 400
+    assert newresponse.json()["detail"] == "Duplicate Course"
+    await client.delete(f"/api/courses/{old_course_id}")
+
+
+@pytest.mark.asyncio
+async def test_get_nonexistent_course_by_id(client):
+    nonexistent_course_id = "course_id" 
+    
+    response = await client.get(f"/api/courses/{nonexistent_course_id}")
+    
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Course not found"
+    
+    
+@pytest.mark.asyncio
+async def test_delete_course(client):
+    global course_id
+    response = await client.delete(f"/api/courses/{course_id}")
+    assert response.status_code == 200
+    assert response.json()["status"] == "success"
+    assert response.json()["message"] == "Course deleted successfully"
+
+    
 
 

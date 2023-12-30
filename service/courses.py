@@ -22,9 +22,11 @@ async def Read(id: str):
 
 async def Create(course: Course):
     course_dict = create_course(course)
+    
     unique_query = {
         "course_code": course_dict["course_code"],
-        "year": course_dict["year"]
+        "year": course_dict["year"],
+        "group": course_dict["group"]
     }
     
     existing_course = course_collection.find_one(unique_query)
@@ -33,7 +35,12 @@ async def Create(course: Course):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Duplicate Course")
     
     _id = course_collection.insert_one(course_dict)
-    return {"status": "success", "message": "Course create successfully","_id": str(_id.inserted_id)}
+    
+    return {
+        "status": "success",
+        "message": "Course create successfully",
+        "_id": str(_id.inserted_id)
+    }
 
 
 async def Update(id: str, course: Course):
