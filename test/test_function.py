@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 from service.courses import build_query, find_course_by_id
 from bson import ObjectId
 from schemas.courses import course_serializer
+import re
 
 # Start test build_query function   
 @pytest.mark.asyncio
@@ -29,7 +30,8 @@ async def test_build_query_course_code_and_name():
     mock_request.IsDelete = None
     
     query = build_query(mock_request)
-    assert query == {"course_code": "CS101", "course_name": "Introduction to CS"}
+    assert query["course_code"] == "CS101"
+    assert isinstance(query["course_name"], re.Pattern)
 
 @pytest.mark.asyncio
 async def test_build_query_all_attributes():
@@ -42,7 +44,9 @@ async def test_build_query_all_attributes():
     mock_request.IsDelete = None
     
     query = build_query(mock_request)
-    assert query == {"course_code": "CS101", "course_name": "Introduction to CS", "year": 2023}
+    assert query["course_code"] == "CS101"
+    assert isinstance(query["course_name"], re.Pattern)  
+    assert query["year"] == 2023
 
 @pytest.mark.asyncio
 async def test_build_query_is_active():
@@ -81,13 +85,11 @@ async def test_build_query_multiple_attributes():
     mock_request.IsDelete = False
     
     query = build_query(mock_request)
-    assert query == {
-        "course_code": "CS101",
-        "course_name": "Introduction to CS",
-        "year": 2023,
-        "IsActive": True,
-        "IsDelete": False
-    }
+    assert query["course_code"] == "CS101"
+    assert isinstance(query["course_name"], re.Pattern)
+    assert query["year"] == 2023
+    assert query["IsActive"] == True
+    assert query["IsDelete"] == False
 
 # End test build_query function   
 

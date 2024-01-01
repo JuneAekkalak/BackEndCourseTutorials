@@ -5,6 +5,7 @@ from bson.errors import InvalidId
 from schemas.courses import courses_serializers, course_serializer
 from models.courses import Course, SearchRequestModel
 from datetime import datetime
+import re
 
 
 async def Search(request: SearchRequestModel):
@@ -79,7 +80,8 @@ def build_query(request: SearchRequestModel) -> dict:
     if request.course_code:
         query["course_code"] = request.course_code
     if request.course_name:
-        query["course_name"] = request.course_name
+        regex_pattern = re.compile(f".*{re.escape(request.course_name)}.*", re.IGNORECASE)
+        query["course_name"] = regex_pattern
     if request.year:
         query["year"] = request.year
     if request.IsActive is not None:
